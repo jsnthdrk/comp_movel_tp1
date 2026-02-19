@@ -16,3 +16,14 @@ pip install 'flet[all]'
 6. caso alguma dúvida surja que impacte a instalação do Flet para poder utilizar a aplicação, pode consultar os seguintes links:
 https://docs.flet.dev/
 https://docs.flet.dev/getting-started/installation/
+
+### objetivo 1
+este objetivo visa implementar a funcionalidade de resolução de equações utilizando a biblioteca "SymPy" -> https://docs.sympy.org/latest/index.html
+
+assim, podemos implementar a resolução de equações (como por exemplo, casos notáveis), seguindo a prioridade de cálculo PEMDAS (Parenthesis > Exponents > Multiplication & Division > Addition & Subtraction), que, implementa a ordem de operações que aprendemos e usamos hoje em dia em equações mais "básicas", ou seja, numa calculadora científica.
+
+ou seja, prioritizamos parentesis, seguidos por expoentes, depois decidimos entre multiplicação OU divisão, e, por fim, entre adição OU subtração.
+
+1. para tal, torna-se uma depedência do nosso projeto, e, temos que instalar:
+'pip install sympy'
+2. isto, depois, irá ser refletido no desenvolvimento do projeto, de forma a possibilitar a elaboração de equações, com arredondamentos precisos, e, para tal, irá ser possível ESCREVER na calculadora a equação.
