@@ -1,6 +1,7 @@
 from dataclasses import field
 
 import flet as ft
+import sympy as sp
 
 
 @ft.control
@@ -28,16 +29,26 @@ class ExtraActionButton(CalcButton):
 
 @ft.control
 class CalculatorApp(ft.Container):
-    def init(self):
+    def __init__(self):
+        super().__init__()
         self.reset()
         self.width = 350
         self.bgcolor = ft.Colors.BLACK
         self.border_radius = ft.BorderRadius.all(20)
         self.padding = 20
         self.result = ft.Text(value="0", color=ft.Colors.WHITE, size=20)
-
+        self.input = ft.TextField(
+            value="",
+            color=ft.Colors.WHITE,
+            text_align=ft.TextAlign.RIGHT, 
+            input_filter=ft.InputFilter(allow=True, regex_string=r"^[0-9\+\-\*\/\.\(\)\s]*$"),
+            hint_text="Insira a expressão..."
+            )
         self.content = ft.Column(
             controls=[
+                ft.Row(
+                    controls=[self.input],
+                ),
                 ft.Row(
                     controls=[self.result],
                     alignment=ft.MainAxisAlignment.END,
