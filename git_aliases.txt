@@ -1,0 +1,9 @@
+[alias]
+	statusv = status -v
+	pullv = pull -v
+	pushv = push -v
+	addv = add . -v
+	logv = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
+	unstash = stash pop
+	aliases = config --get-regexp alias
+	editconfigs = config --global -e
