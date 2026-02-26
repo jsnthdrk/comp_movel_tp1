@@ -42,8 +42,11 @@ class CalculatorApp(ft.Container):
             color=ft.Colors.WHITE,
             text_align=ft.TextAlign.RIGHT, 
             input_filter=ft.InputFilter(allow=True, regex_string=r"^[0-9\+\-\*\/\.\(\)\s]*$"),
-            hint_text="Insira a expressão..."
+            hint_text="Insira a expressão...",
+            border=ft.InputBorder.NONE,
+            on_submit=self.submit_input
             )
+        
         self.content = ft.Column(
             controls=[
                 ft.Row(
@@ -56,8 +59,8 @@ class CalculatorApp(ft.Container):
                 ft.Row(
                     controls=[
                         ExtraActionButton(content="AC", on_click=self.button_clicked),
-                        ExtraActionButton(content="+/-", on_click=self.button_clicked),
-                        ExtraActionButton(content="%", on_click=self.button_clicked),
+                        ActionButton(content="(", on_click=self.button_clicked),
+                        ActionButton(content=")", on_click=self.button_clicked),
                         ActionButton(content="/", on_click=self.button_clicked),
                     ]
                 ),
@@ -100,48 +103,44 @@ class CalculatorApp(ft.Container):
     def button_clicked(self, e):
         data = e.control.content
         print(f"Button clicked with data = {data}")
-        if self.result.value == "Error" or data == "AC":
+        
+        if data == "AC":
+            self.input.value = ""
             self.result.value = "0"
-            self.reset()
-
-        elif data in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."):
-            if self.result.value == "0" or self.new_operand:
-                self.result.value = data
-                self.new_operand = False
-            else:
-                self.result.value = self.result.value + data
-
-        elif data in ("+", "-", "*", "/"):
-            self.result.value = self.calculate(
-                self.operand1, float(self.result.value), self.operator
-            )
-            self.operator = data
-            if self.result.value == "Error":
-                self.operand1 = "0"
-            else:
-                self.operand1 = float(self.result.value)
-            self.new_operand = True
-
-        elif data in ("="):
-            self.result.value = self.calculate(
-                self.operand1, float(self.result.value), self.operator
-            )
-            self.reset()
-
-        elif data in ("%"):
-            self.result.value = float(self.result.value) / 100
-            self.reset()
-
-        elif data in ("+/-"):
-            if float(self.result.value) > 0:
-                self.result.value = "-" + str(self.result.value)
-
-            elif float(self.result.value) < 0:
-                self.result.value = str(
-                    self.format_number(abs(float(self.result.value)))
-                )
-
+        
+        elif data in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", "+", "-", "*", "/", "(", ")"):
+            self.input.value += data
+            
+        elif data == "=":
+            self.calculate_expression()
+            
         self.update()
+    
+    def submit_input(self, e):
+        self.calculate_expression()
+        self.update()
+    
+    def calculate_expression(self, e=None):
+        try:
+            eprx = self.input.value
+            if eprx:
+                expr = sp.sympify(eprx)
+                result = float(expr.evalf())
+                
+                if result.is_integer():
+                    parsed_result = f"{int(result):_}".replace("_", " ")
+                    self.result.value = parsed_result
+                else:
+                    rounded_result = round(result, 8)
+                    rounded_parsed_result = f"{rounded_result:_}".replace("_", " ")
+                    self.result.value = rounded_parsed_result
+            
+            self.update()
+        
+        except Exception as e:
+            print("Error: " + str(e))
+            self,result.value = "Error"
+            self.update()
 
     def format_number(self, num):
         if num % 1 == 0:
