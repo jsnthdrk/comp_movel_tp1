@@ -1,6 +1,6 @@
 # comp_movel_tp1 - calculadora
 
-este trabalho visa criar e implementar uma calculadora em FLET, cuja versão base será usada através do seguinte link: https://docs.flet.dev/tutorials/calculator/
+este trabalho visa criar e implementar uma calculadora em FLET, cuja versão base será usada através do seguinte link: https://docs.flet.dev/tutorials/calculator/ - que diz respeito ao objetivo 1
 
 ## requisitos para correr o programa
 
@@ -18,6 +18,9 @@ https://docs.flet.dev/
 https://docs.flet.dev/getting-started/installation/
 
 ### objetivo 1
+seguir a implementação da calculadora no seguinte link: https://docs.flet.dev/tutorials/calculator/
+
+### objetivo 2
 este objetivo visa implementar a funcionalidade de resolução de equações utilizando a biblioteca "SymPy" -> https://docs.sympy.org/latest/index.html
 
 assim, podemos implementar a resolução de equações (como por exemplo, casos notáveis), seguindo a prioridade de cálculo PEMDAS (Parenthesis > Exponents > Multiplication & Division > Addition & Subtraction), que, implementa a ordem de operações que aprendemos e usamos hoje em dia em equações mais "básicas", ou seja, numa calculadora científica.
@@ -26,4 +29,4 @@ ou seja, prioritizamos parentesis, seguidos por expoentes, depois decidimos entr
 
 1. para tal, torna-se uma depedência do nosso projeto, e, temos que instalar:
 'pip install sympy'
-2. isto, depois, irá ser refletido no desenvolvimento do projeto, de forma a possibilitar a elaboração de equações, com arredondamentos precisos, e, para tal, irá ser possível ESCREVER na calculadora a equação.
+2. isto, depois, irá ser refletido no desenvolvimento do projeto, de forma a possibilitar a elaboração de equações, com arredondamentos precisos, e, para tal, irá ser possível ESCREVER na calculadora a equação
