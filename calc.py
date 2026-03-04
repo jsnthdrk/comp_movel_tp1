@@ -32,7 +32,8 @@ class CalculatorApp(ft.Container):
     def __init__(self):
         super().__init__()
         self.reset()
-        self.width = 350
+        self.width = 400
+        self.height = 400
         self.bgcolor = ft.Colors.BLACK
         self.border_radius = ft.BorderRadius.all(20)
         self.padding = 20
@@ -139,7 +140,7 @@ class CalculatorApp(ft.Container):
         
         except Exception as e:
             print("Error: " + str(e))
-            self,result.value = "Error"
+            self.result.value = "Error"
             self.update()
 
     def format_number(self, num):
@@ -174,6 +175,10 @@ def main(page: ft.Page):
     page.title = "Calc App"
     # create application instance
     calc = CalculatorApp()
+    page.window.width = calc.width + 40
+    page.window.height = calc.height + 40
+    page.window.resizable = False
+    # page.window.center() - RuntimeWarning: Enable tracemalloc to get the object allocation traceback - verificar!
 
     # add application's root control to the page
     page.add(calc)
