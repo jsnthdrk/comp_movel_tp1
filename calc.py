@@ -1,7 +1,8 @@
 from dataclasses import field
-
 import flet as ft
 import sympy as sp
+import random
+import re # verificar se é pertinente usar esta lib
 
 
 @ft.control
@@ -32,11 +33,14 @@ class CalculatorApp(ft.Container):
     def __init__(self):
         super().__init__()
         self.reset()
+        self.is_scientific = False # controlo para ver se a calculadora está em modo científico ou não
+        
         self.width = 350
         self.bgcolor = ft.Colors.BLACK
         self.border_radius = ft.BorderRadius.all(20)
         self.padding = 20
-        self.result = ft.Text(value="0", color=ft.Colors.WHITE, size=20)
+        
+        self.result = ft.Text(value="0", color=ft.Colors.WHITE, size=20, weight=ft.FontWeight.BOLD)   
         self.input = ft.TextField(
             value="",
             color=ft.Colors.WHITE,
@@ -46,6 +50,39 @@ class CalculatorApp(ft.Container):
             border=ft.InputBorder.NONE,
             on_submit=self.submit_input
             )
+        
+        self.mode_button = ft.IconButton(
+            icon=ft.Icons.SCIENCE,
+            icon_color=ft.Colors.BLUE_200,
+            tooltip="Calculadora Científica",
+            on_click=self.toggle_mode
+        ),
+        
+        self.row_scientific = ft.Row(visible=False, controls=[
+            ExtraActionButton(content="sin(\u0078)", on_click=self.button_clicked),
+            ExtraActionButton(content="cos(\u0078)", on_click=self.button_clicked),
+            ExtraActionButton(content="tan(\u0078)", on_click=self.button_clicked),
+            ExtraActionButton(content="arcsin(\u0078)", on_click=self.button_clicked),
+            ExtraActionButton(content="arccos(\u0078)", on_click=self.button_clicked),
+            ExtraActionButton(content="arctan(\u0078)", on_click=self.button_clicked),     
+        ]
+        ),
+        
+        self.row_scientific_2 = ft.Row(visible=False, controls=[
+            ExtraActionButton(content="log(\u0078)", on_click=self.button_clicked),
+            ExtraActionButton(content="n!", on_click=self.button_clicked),
+            ExtraActionButton(content="%", on_click=self.button_clicked),
+            ExtraActionButton(content="rand", on_click=self.button_clicked),
+        ]
+        ),
+        
+        self.row_scientific_3 = ft.Row(visible=False, controls=[
+            ExtraActionButton(content="\221a(x)", on_click=self.button_clicked), # testar com \u0078 no x
+            ExtraActionButton(content="x\u00b2", on_click=self.button_clicked),
+            ExtraActionButton(content="\u215fx", on_click=self.button_clicked),
+            ExtraActionButton(content="e\u00bx", on_click=self.button_clicked),
+        ]
+        ),
         
         self.content = ft.Column(
             controls=[
@@ -168,7 +205,9 @@ class CalculatorApp(ft.Container):
         self.operator = "+"
         self.operand1 = 0
         self.new_operand = True
-
+    
+    def toggle_mode(self):
+        pass
 
 def main(page: ft.Page):
     page.title = "Calc App"
