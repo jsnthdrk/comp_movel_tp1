@@ -260,16 +260,16 @@ class CalculatorApp(ft.Container):
         if self.is_scientific:
             self.mode_button.icon = ft.Icons.CALCULATE
             self.tooltip = "Calculadora Básica"
-            self.page_ref.window_height = 750
+            self.page.window.height = 750
             self.width = 400
         else:
             self.mode_button.icon = ft.Icons.SCIENCE
             self.mode_button.tooltip = "Modo Científico"
-            self.page_ref.window_height = 580
+            self.page.window.height = 580
             self.width = 400
 
         self.update()
-        self.page_ref.update()
+        self.page.update()
 
 def main(page: ft.Page):
     page.title = "Calc App"
