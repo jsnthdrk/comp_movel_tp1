@@ -2,6 +2,14 @@ from dataclasses import field
 import flet as ft
 import sympy as sp
 import random
+from datetime import datetime as dt
+
+class HistoryItem:
+    def __innit__(self, index, expression, result):
+        self.index = index
+        self.expression = expression
+        self.result = result
+        self.timestamp = dt.now().strftime("%H:%M:%S")
 
 @ft.control
 class CalcButton(ft.Button):
@@ -29,6 +37,11 @@ class CalculatorApp(ft.Container):
         self.reset()
         self.is_scientific = False # controlo para ver se a calculadora está em modo científico ou não
         
+        # setup das vars para o historico
+        self.history_data = [] # HistoryItem.object
+        self.history_counter = 0 # HistoryItem.index
+        self.last_expression = "" # HistoryItem.expression
+        
         self.result = ft.Text(value="0", color=ft.Colors.WHITE, size=20, weight=ft.FontWeight.BOLD)   
         self.input = ft.TextField(
             value="",
@@ -45,6 +58,13 @@ class CalculatorApp(ft.Container):
             icon_color=ft.Colors.BLUE_200,
             tooltip="Modo Científico",
             on_click=self.toggle_mode
+        )
+        
+        self.history_button = ft.IconButton(
+            icon=ft.Icons.HISTORY,
+            icon_color=ft.Colors.BLUE_200,
+            tooltip="Histórico de Cálculos",
+            on_click=self.toggle_history_view
         )
         
         # linhas básicas
@@ -112,21 +132,16 @@ class CalculatorApp(ft.Container):
         
         self.row_scientific_3 = ft.Row(visible=False, controls=[
             ExtraActionButton(content="rand", expand=True, on_click=self.button_clicked),
-            ExtraActionButton(content="\u221a(x)", expand=True, on_click=self.button_clicked),
-            ExtraActionButton(content="x\u00b2", expand=True, on_click=self.button_clicked), 
-            ExtraActionButton(content="\u215fx", expand=True, on_click=self.button_clicked), 
-            ExtraActionButton(content="e\u00b2", expand=True, on_click=self.button_clicked) 
+            ExtraActionButton(content="\u221a(x)", expand=True, on_click=self.button_clicked), # sqrt(x)
+            ExtraActionButton(content="x\u00b2", expand=True, on_click=self.button_clicked), # x^2
+            ExtraActionButton(content="\u215fx", expand=True, on_click=self.button_clicked),  # x^(1/2)
+            ExtraActionButton(content="e\u00b2", expand=True, on_click=self.button_clicked) # e^2
         ]
         )
         
-        # layout
-        self.content = ft.Column(
+        # layout dos botoes (agrupados)
+        self.buttons_layout = ft.Column(
             controls=[
-                ft.Row([self.mode_button], alignment=ft.MainAxisAlignment.START),
-                ft.Row([self.input], alignment=ft.MainAxisAlignment.END), # agora fica sempre alinhado à direita (fim do container)
-                ft.Row([self.result], alignment=ft.MainAxisAlignment.END),
-                ft.Divider(color=ft.Colors.GREY_800),
-                
                 # modo científico
                 self.row_scientific,
                 self.row_scientific_2,
@@ -138,6 +153,40 @@ class CalculatorApp(ft.Container):
                 self.row_basic_3,
                 self.row_basic_4,
                 self.row_basic_5
+            ]
+        )
+                
+        # layout do historico
+        self.history_list_view = ft.ListView(expand=True, spacing=10, padding=10, auto_scroll=True)
+        
+        # container para o historico
+        self.history_container = ft.Container(
+            content=self.history_list_view,
+            visible=False,
+            bgcolor=ft.Colors.GREY_900,
+            border_radius=10,
+            padding=5,
+            expand=True
+        )
+        
+        # layout principal da app
+        self.content = ft.Column(
+            controls=[
+                ft.Row([self.mode_button], alignment=ft.MainAxisAlignment.START),
+                ft.Row([self.input], alignment=ft.MainAxisAlignment.END), # agora fica sempre alinhado à direita (fim do container)
+                ft.Row([self.result], alignment=ft.MainAxisAlignment.END),
+                ft.Divider(color=ft.Colors.GREY_800),
+                
+                # area dinamica
+                ft.Container(
+                    content=ft.Stack(
+                        controls=[
+                            self.buttons_layout,
+                            self.history_container
+                        ]
+                    ),
+                    expand=True # ocupar todo os espaço disponivel
+                )
             ]
         )
         
@@ -262,6 +311,26 @@ class CalculatorApp(ft.Container):
 
         self.update()
         self.page.update()
+    
+    # método para adicionar o ultimo calculo efetuado e resultado obtido no historico
+    def add_to_history(self, expression, result):
+        pass
+    
+    # método para apagar um item do historico (expressão e resultado) do historico
+    def delete_from_history(self, item_object):
+        pass
+    
+    # método para copiar o resultado da iteração do histórico para a clipboard
+    def copy_result(self, text_result):
+        pass
+    
+    # método para termos o "render" gráfico, isto é para definir a nossa nova janela overlay
+    def render_history(self):
+        pass
+    
+    # método para alternar entre mostrar a nossa janela de histórico e a calculadora atual
+    def toggle_history_view(self, e):
+        pass
 
 def main(page: ft.Page):
     page.title = "Calc App"
