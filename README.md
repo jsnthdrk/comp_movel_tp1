@@ -74,9 +74,13 @@ pip install sympy
 
 De forma a introduzir mais complexidade à calculadora, este requisito visa introduzir as seguintes funcionalidades:
 
+#### Modo Científico**
+
+* Foi adicionado um botão no canto superior direito, que, quando pressionado, muda a janela atual para um tamanho maior, de forma a introduzir os botões abaixo.
+
 **Potências e Raízes:**
 
-* $\sqrt{x}$ : Raiz Quadrada (<kbd>√</kbd>)
+* $\sqrt{x}$ : Raiz Quadrada (<kbd>sqrt</kbd>)
 * $x^y$ : Potência (<kbd>^</kbd>)
 * $\frac{1}{x}$ : Inversão (<kbd>1/x</kbd>)
 * $e^x$ : Exponencial (<kbd>exp</kbd>)
@@ -97,7 +101,30 @@ De forma a introduzir mais complexidade à calculadora, este requisito visa intr
 * $x \pmod y$ : Módulo / Resto da divisão (<kbd>%</kbd>)
 * $r$ : Número aleatório (<kbd>rand</kbd>)
 
-### Execução do programa
+### Objetivo 4: Histórico de Cálculos
+
+Para podermos implementar um histórico de cálculos, vai ser realizado o seguinte:
+
+* No canto superior direito (nos dois modos), um botão com a funcionalidade de abrir um separador que irá mostrar o histórico de cálculos, e os respetivos resultados.
+* Este separador irá ser ordenado de ordem decrescente, ou seja, do cálculo mais recente ao mais antigo.
+
+#### Desenho de Classe
+
+Irá ser desenhada uma nova classe com os seguintes elementos de cada iteração do histórico:
+
+* Índice (auto-increment);
+* Data e hora da realização do cálculo;
+* Expressão numérica calculada;
+* Resultado;
+* Um botão no fim do da iteração do histórico, que permite apagar cálculos do histórico;
+* Um botão para copiar o resultado da iteração do histórico para a área de transferência;
+
+#### Funcionalidades Críticas
+
+* Só irá ser adicionado um cálculo ao histórico quando o mesmo for um cálculo novo e não uma continuação;
+* Quando o número de cálculos armazenados for igual a 10, o 11º cálculo efetuado, o cálculo mais antigo irá ser apagado automaticamente do histórico, e assim sucessivamente.
+
+## Execução do programa
 
 ```bash
 flet run calc.py
