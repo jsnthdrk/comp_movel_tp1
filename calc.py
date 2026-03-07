@@ -2,31 +2,25 @@ from dataclasses import field
 import flet as ft
 import sympy as sp
 import random
-import re # verificar se é pertinente usar esta lib
-
 
 @ft.control
 class CalcButton(ft.Button):
     expand: int = field(default_factory=lambda: 1)
-
 
 @ft.control
 class DigitButton(CalcButton):
     bgcolor: ft.Colors = ft.Colors.WHITE_24
     color: ft.Colors = ft.Colors.WHITE
 
-
 @ft.control
 class ActionButton(CalcButton):
     bgcolor: ft.Colors = ft.Colors.ORANGE
     color: ft.Colors = ft.Colors.WHITE
 
-
 @ft.control
 class ExtraActionButton(CalcButton):
     bgcolor: ft.Colors = ft.Colors.BLUE_GREY_100
     color: ft.Colors = ft.Colors.BLACK
-
 
 @ft.control
 class CalculatorApp(ft.Container):
@@ -34,11 +28,6 @@ class CalculatorApp(ft.Container):
         super().__init__()
         self.reset()
         self.is_scientific = False # controlo para ver se a calculadora está em modo científico ou não
-        
-        self.width = 400
-        self.bgcolor = ft.Colors.BLACK
-        self.border_radius = ft.BorderRadius.all(20)
-        self.padding = 20
         
         self.result = ft.Text(value="0", color=ft.Colors.WHITE, size=20, weight=ft.FontWeight.BOLD)   
         self.input = ft.TextField(
@@ -54,80 +43,79 @@ class CalculatorApp(ft.Container):
         self.mode_button = ft.IconButton(
             icon=ft.Icons.SCIENCE,
             icon_color=ft.Colors.BLUE_200,
-            tooltip="Calculadora Científica",
+            tooltip="Modo Científico",
             on_click=self.toggle_mode
         )
         
         # linhas básicas
         self.row_basic = ft.Row(controls=[
-            ExtraActionButton(content="AC", on_click=self.button_clicked),
-            ExtraActionButton(content="CE", on_click=self.button_clicked),
-            ExtraActionButton(content="%", on_click=self.button_clicked),
-            ExtraActionButton(content="\u232b", on_click=self.button_clicked), # backspace
-        ]
-        )
+            ExtraActionButton(content="AC", expand=True,on_click=self.button_clicked),
+            ExtraActionButton(content="CE", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="%", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="\u232b", expand=True, on_click=self.button_clicked), # backspace
+        ])
         
         self.row_basic_2 = ft.Row(controls=[
-            DigitButton(content="7", on_click=self.button_clicked),
-            DigitButton(content="8", on_click=self.button_clicked),
-            DigitButton(content="9", on_click=self.button_clicked),
-            ActionButton(content="+", on_click=self.button_clicked),
+            DigitButton(content="7", expand=True, on_click=self.button_clicked),
+            DigitButton(content="8", expand=True, on_click=self.button_clicked),
+            DigitButton(content="9", expand=True, on_click=self.button_clicked),
+            ActionButton(content="+", expand=True, on_click=self.button_clicked),
         ]
         )
         
         self.row_basic_3 = ft.Row(controls=[
-            DigitButton(content="4", on_click=self.button_clicked),
-            DigitButton(content="5", on_click=self.button_clicked),
-            DigitButton(content="6", on_click=self.button_clicked),
-            ActionButton(content="-", on_click=self.button_clicked),
+            DigitButton(content="4", expand=True, on_click=self.button_clicked),
+            DigitButton(content="5", expand=True, on_click=self.button_clicked),
+            DigitButton(content="6", expand=True, on_click=self.button_clicked),
+            ActionButton(content="-", expand=True, on_click=self.button_clicked),
         ]
         )
         
         # \u00D7 -> unicode para "*" mas bonito
         self.row_basic_4 = ft.Row(controls=[
-            DigitButton(content="1", on_click=self.button_clicked),
-            DigitButton(content="2", on_click=self.button_clicked),
-            DigitButton(content="3", on_click=self.button_clicked),
-            ActionButton(content="\u00d7", on_click=self.button_clicked), # multiplicação
+            DigitButton(content="1", expand=True, on_click=self.button_clicked),
+            DigitButton(content="2", expand=True, on_click=self.button_clicked),
+            DigitButton(content="3", expand=True, on_click=self.button_clicked),
+            ActionButton(content="\u00d7", expand=True, on_click=self.button_clicked), # multiplicação
         ]
         )
         
         # \u00F7 -> unicode para "divisao" mas bonito
         self.row_basic_5 = ft.Row(controls=[
-            DigitButton(content="0", on_click=self.button_clicked),
-            DigitButton(content=".", on_click=self.button_clicked),
-            ActionButton(content="\u00f7", on_click=self.button_clicked), # divisão
-            ExtraActionButton(content="=", on_click=self.button_clicked),
+            DigitButton(content="0", expand=True, on_click=self.button_clicked),
+            DigitButton(content=".", expand=True, on_click=self.button_clicked),
+            ActionButton(content="\u00f7", expand=True, on_click=self.button_clicked), # divisão
+            ExtraActionButton(content="=", expand=True, on_click=self.button_clicked),
         ]
         )
         
         # linhas científica
         # \u0078 -> unicode para "x" mas bonito
         self.row_scientific = ft.Row(visible=False, controls=[
-            ExtraActionButton(content="sin(\u0078)", on_click=self.button_clicked),
-            ExtraActionButton(content="cos(\u0078)", on_click=self.button_clicked),
-            ExtraActionButton(content="tan(\u0078)", on_click=self.button_clicked),
-            ExtraActionButton(content="n!", on_click=self.button_clicked),
-            ExtraActionButton(content="(", on_click=self.button_clicked),
+            ExtraActionButton(content="sin(\u0078)", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="cos(\u0078)", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="tan(\u0078)", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="n!", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="(", expand=True, on_click=self.button_clicked),
             ExtraActionButton(content=")", on_click=self.button_clicked),
         ]
         )
         
         # \u0078 -> unicode para "x" mas bonito
         self.row_scientific_2 = ft.Row(visible=False, controls=[
-            ExtraActionButton(content="arccos(\u0078)", expand=1, on_click=self.button_clicked), 
-            ExtraActionButton(content="arcsin(\u0078)", expand=1, on_click=self.button_clicked),
-            ExtraActionButton(content="arctan(\u0078)", expand=1, on_click=self.button_clicked),     
-            ExtraActionButton(content="log(\u0078)", on_click=self.button_clicked),
+            ExtraActionButton(content="arccos(\u0078)", expand=True, on_click=self.button_clicked), 
+            ExtraActionButton(content="arcsin(\u0078)", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="arctan(\u0078)", expand=True, on_click=self.button_clicked),     
+            ExtraActionButton(content="log(\u0078)", expand=True, on_click=self.button_clicked),
         ]
         )
         
         self.row_scientific_3 = ft.Row(visible=False, controls=[
-            ExtraActionButton(content="rand", on_click=self.button_clicked),
-            ExtraActionButton(content="\221a(x)", on_click=self.button_clicked), # sqrt(x)
-            ExtraActionButton(content="x\u00b2", on_click=self.button_clicked), # x^2
-            ExtraActionButton(content="\u215fx", on_click=self.button_clicked), # x^(1/2)
-            ExtraActionButton(content="e\u00b2", on_click=self.button_clicked) # e^2
+            ExtraActionButton(content="rand", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="\u221a(x)", expand=True, on_click=self.button_clicked),
+            ExtraActionButton(content="x\u00b2", expand=True, on_click=self.button_clicked), 
+            ExtraActionButton(content="\u215fx", expand=True, on_click=self.button_clicked), 
+            ExtraActionButton(content="e\u00b2", expand=True, on_click=self.button_clicked) 
         ]
         )
         
@@ -135,7 +123,7 @@ class CalculatorApp(ft.Container):
         self.content = ft.Column(
             controls=[
                 ft.Row([self.mode_button], alignment=ft.MainAxisAlignment.START),
-                ft.Row([self.input]),
+                ft.Row([self.input], alignment=ft.MainAxisAlignment.END), # agora fica sempre alinhado à direita (fim do container)
                 ft.Row([self.result], alignment=ft.MainAxisAlignment.END),
                 ft.Divider(color=ft.Colors.GREY_800),
                 
@@ -156,7 +144,7 @@ class CalculatorApp(ft.Container):
     # refatoração do método de forma a que os novos botões que estão a utilizar unicode sejam processados corretamente (e também mapeados para o modo científico)
     def button_clicked(self, e):
         data = e.control.content
-        print(f"Button clicked with data = {data}")
+        print(f"Button clicked with data = {data}") # debug
         
         if data == "AC":
             self.input.value = ""
@@ -215,12 +203,12 @@ class CalculatorApp(ft.Container):
                     rounded_result = round(result, 8)
                     rounded_parsed_result = f"{rounded_result:_}".replace("_", " ")
                     self.result.value = rounded_parsed_result
-            
+            print(f"Calculated result: {self.result.value}") #debug
             self.update()
         
         except Exception as e:
             print("Error: " + str(e))
-            self,result.value = "Error"
+            self.result.value = "Error"
             self.update()
 
     def format_number(self, num):
@@ -257,33 +245,33 @@ class CalculatorApp(ft.Container):
         self.row_scientific_2.visible = self.is_scientific
         self.row_scientific_3.visible = self.is_scientific
         
-        if self.is_scientific:
+        if self.is_scientific == False: # normalmente faria sentido usar o default do "if" is true, mas como a variavel é predefina para false, a logica estava trocada :)
             self.mode_button.icon = ft.Icons.CALCULATE
-            self.tooltip = "Calculadora Básica"
-            self.page.window.height = 750
-            self.width = 400
+            self.mode_button.tooltip = "Modo Básico"
+            self.height = 450 # altura do container diminui para acomodar os botões básicos
+            self.page.window.height = self.height # largura da janela fica proporcional ao contai
+            self.width = 350 # largura do container diminui para acomodar os botões básicos
+            self.page.window.width = self.width # altura da janela fica proporcional ao container
         else:
             self.mode_button.icon = ft.Icons.SCIENCE
             self.mode_button.tooltip = "Modo Científico"
-            self.page.window.height = 580
-            self.width = 400
+            self.height = 570 # altura do container aumenta para acomodar os novos botões
+            self.page.window.height = self.height # largura da janela fica proporcional ao container
+            self.width = 650 # largura do container aumenta para acomodar os novos botões
+            self.page.window.width = self.width # altura da janela fica proporcional ao container 
 
         self.update()
         self.page.update()
 
 def main(page: ft.Page):
     page.title = "Calc App"
+    page.bgcolor = ft.Colors.BLACK
+    page.window.resizable = False
+    page.window.height = 450 # altura inicial da janela, que é a mesma do container em modo básico
+    page.window.width = 350 # largura inicial da janela, que é a mesma do container em modo básico
     # create application instance
     calc = CalculatorApp()
-    page.window.width = calc.width
-    print(f"Page width set to: {page.window.width}")
-    page.window.height = calc.height
-    print(f"Page height set to: {page.window.height}")
-    page.window.resizable = False
-    # page.window.center() - RuntimeWarning: Enable tracemalloc to get the object allocation traceback - verificar!
-
     # add application's root control to the page
     page.add(calc)
-
 
 ft.run(main)
