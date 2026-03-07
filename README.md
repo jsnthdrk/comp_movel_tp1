@@ -74,7 +74,7 @@ pip install sympy
 
 De forma a introduzir mais complexidade à calculadora, este requisito visa introduzir as seguintes funcionalidades:
 
-#### Modo Científico**
+#### Modo Científico
 
 * Foi adicionado um botão no canto superior direito, que, quando pressionado, muda a janela atual para um tamanho maior, de forma a introduzir os botões abaixo.
 
