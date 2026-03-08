@@ -124,6 +124,18 @@ Irá ser desenhada uma nova classe com os seguintes elementos de cada iteração
 * Só irá ser adicionado um cálculo ao histórico quando o mesmo for um cálculo novo e não uma continuação;
 * Quando o número de cálculos armazenados for igual a 10, o 11º cálculo efetuado, o cálculo mais antigo irá ser apagado automaticamente do histórico, e assim sucessivamente.
 
+### Objetivo 5: Armazenamento Local do Histórico de Cálculos
+
+Irá ser desenvolvida uma solução que teremos dois tipos de armazenamento:
+
+1. Armazenamento Client-Side [Client Storage](https://docs.flet.dev/cookbook/client-storage/)
+2. Armazenamento através de uma base de dados local (DuckDB, no formato Apache Parquet)
+
+Simultaneamente, teremos a funcionalidade de:
+
+* Salvar e carregar automaticamente o histórico de cálculos para as duas soluções acima;
+* Sincronismo automático do histórico entre as duas soluções de armazenamento, com um carregamento do histórico da primeira solução de armazenamento que esteja "live" quando a aplicação inicia.
+
 ## Execução do programa
 
 ```bash
