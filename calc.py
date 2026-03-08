@@ -355,21 +355,25 @@ class CalculatorApp(ft.Container):
             print(f"----\nItem Apagado: {item_object}") # debug
     
     # método para copiar o resultado da iteração do histórico para a clipboard
-    def copy_result(self, text_result):
+    async def copy_result(self, text_result):
+        await ft.Clipboard().set(text_result)
+        self.page.show_dialog(ft.SnackBar(ft.Text('Texto copiado!')))
         print(f"----\nResultado Copiado: {text_result}") # debug
-        pass
     
     # método para termos o "render" gráfico, isto é para definir a nossa nova janela overlay
     def render_history(self):
         self.history_list_view.controls.clear()
 
+        
         for item in self.history_data:
+            async def copy_handler(e, result=item.result):
+                await self.copy_result(result)
             # render do botao copiar
             copy_button = ft.IconButton(
                 icon=ft.Icons.COPY,
                 icon_size=20,
                 tooltip="Copiar Resultado",
-                on_click=lambda e, r=item.result: self.copy_result(r)
+                on_click=copy_handler
             )
             # render do botao apagar
             delete_button = ft.IconButton(
