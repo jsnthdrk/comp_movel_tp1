@@ -5,11 +5,15 @@ import random
 from datetime import datetime as dt
 
 class HistoryItem:
-    def __innit__(self, index, expression, result):
+    def __init__(self, index, expression, result):
         self.index = index
         self.expression = expression
         self.result = result
         self.timestamp = dt.now().strftime("%H:%M:%S")
+    
+    # debug: assim podemos mostrar na consola o nosso objeto
+    def __str__(self):
+        return f"\nID: {self.index}\nExpression: {self.expression}\nResult: {self.result}\nTimestamp: {self.timestamp}\n----"
 
 @ft.control
 class CalcButton(ft.Button):
@@ -55,14 +59,14 @@ class CalculatorApp(ft.Container):
         
         self.mode_button = ft.IconButton(
             icon=ft.Icons.SCIENCE,
-            icon_color=ft.Colors.BLUE_200,
+            icon_color=ft.Colors.WHITE,
             tooltip="Modo Científico",
             on_click=self.toggle_mode
         )
         
         self.history_button = ft.IconButton(
             icon=ft.Icons.HISTORY,
-            icon_color=ft.Colors.BLUE_200,
+            icon_color=ft.Colors.WHITE,
             tooltip="Histórico de Cálculos",
             on_click=self.toggle_history_view
         )
@@ -172,7 +176,7 @@ class CalculatorApp(ft.Container):
         # layout principal da app
         self.content = ft.Column(
             controls=[
-                ft.Row([self.mode_button], alignment=ft.MainAxisAlignment.START),
+                ft.Row([self.mode_button, self.history_button], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                 ft.Row([self.input], alignment=ft.MainAxisAlignment.END), # agora fica sempre alinhado à direita (fim do container)
                 ft.Row([self.result], alignment=ft.MainAxisAlignment.END),
                 ft.Divider(color=ft.Colors.GREY_800),
@@ -226,7 +230,7 @@ class CalculatorApp(ft.Container):
         elif data == "e\u00b2": self.input.value += "E**2" # e^2
         
         # nao faz parte do sympy mas é uma função matemática comum, e o sympy consegue processar o random
-        elif data == "rand":        self.input.value += str(round(random.random(), 4))
+        elif data == "rand": self.input.value += str(round(random.random(), 4))
         
         # se nao for mais nada vamos assumir que é alguma outra coisa que passe pelo regex do input filter (1-9,0, +- , etc)            
         else:
@@ -242,17 +246,26 @@ class CalculatorApp(ft.Container):
         try:
             eprx = self.input.value
             if eprx:
-                expr = sp.sympify(eprx)
-                result = float(expr.evalf())
+                if eprx == self.last_expression: # ver se a expressão já foi calculada, se sim, só da output no resultado
+                    return
                 
+                eprx = sp.sympify(eprx)
+                result = float(eprx.evalf())
+                
+                text_result = ""
                 if result.is_integer():
                     parsed_result = f"{int(result):_}".replace("_", " ")
+                    text_result = parsed_result
                     self.result.value = parsed_result
                 else:
                     rounded_result = round(result, 8)
                     rounded_parsed_result = f"{rounded_result:_}".replace("_", " ")
+                    text_result = rounded_parsed_result
                     self.result.value = rounded_parsed_result
-            print(f"Calculated result: {self.result.value}") #debug
+                
+                self.add_to_history(self.input.value, text_result)
+                self.last_expression = self.input.value
+                print(f"Calculated result: {self.result.value}") # debug
             self.update()
         
         except Exception as e:
@@ -295,14 +308,14 @@ class CalculatorApp(ft.Container):
         self.row_scientific_3.visible = self.is_scientific
         
         if self.is_scientific == False: # normalmente faria sentido usar o default do "if" is true, mas como a variavel é predefina para false, a logica estava trocada :)
-            self.mode_button.icon = ft.Icons.CALCULATE
+            self.mode_button.icon = ft.Icons.SCIENCE
             self.mode_button.tooltip = "Modo Básico"
             self.height = 450 # altura do container diminui para acomodar os botões básicos
             self.page.window.height = self.height # largura da janela fica proporcional ao contai
             self.width = 350 # largura do container diminui para acomodar os botões básicos
             self.page.window.width = self.width # altura da janela fica proporcional ao container
         else:
-            self.mode_button.icon = ft.Icons.SCIENCE
+            self.mode_button.icon = ft.Icons.CALCULATE
             self.mode_button.tooltip = "Modo Científico"
             self.height = 570 # altura do container aumenta para acomodar os novos botões
             self.page.window.height = self.height # largura da janela fica proporcional ao container
@@ -313,25 +326,102 @@ class CalculatorApp(ft.Container):
         self.page.update()
     
     # método para adicionar o ultimo calculo efetuado e resultado obtido no historico
+    # se o numero de calculos armazenados, apaga o mais antigo
     def add_to_history(self, expression, result):
-        pass
-    
+        self.history_counter += 1
+        
+        item = HistoryItem(self.history_counter, expression, result)
+        self.history_data.insert(0, item)
+        if len(self.history_data) > 10:
+            deleted_item = self.history_data.pop()
+            print(f"----\nLimite de itens alcançado, removido: {deleted_item}\n")
+        
+        print(f"----\nItem Adicionado: {item}") # debug
+        self.render_history()
+                
     # método para apagar um item do historico (expressão e resultado) do historico
     def delete_from_history(self, item_object):
-        pass
+        if item_object in self.history_data:
+            self.history_data.remove(item_object)
+            self.render_history()
+            self.update()
+            print(f"----\nItem Apagado: {item_object}") # debug
     
     # método para copiar o resultado da iteração do histórico para a clipboard
     def copy_result(self, text_result):
+        print(f"----\nResultado Copiado: {text_result}") # debug
         pass
     
     # método para termos o "render" gráfico, isto é para definir a nossa nova janela overlay
     def render_history(self):
-        pass
+        self.history_list_view.controls.clear()
+
+        for item in self.history_data:
+            # render do botao copiar
+            copy_button = ft.IconButton(
+                icon=ft.Icons.COPY,
+                icon_size=20,
+                tooltip="Copiar Resultado",
+                on_click=lambda e, r=item.result: self.copy_result(r)
+            )
+            # render do botao apagar
+            delete_button = ft.IconButton(
+                icon=ft.Icons.DELETE,
+                icon_color=ft.Colors.RED,
+                icon_size=20,
+                tooltip="Apagar Cálculo",
+                on_click=lambda e, obj=item: self.delete_from_history(obj)
+            )
+
+            header_row = ft.Row(
+                controls=[
+                    ft.Text(f"id:{item.index}", size=12,color=ft.Colors.GREY_500),
+                    ft.Text(f"{item.timestamp}", size=12,color=ft.Colors.GREY_500),
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+            )
+            
+            # render do "corpo" de cada item do historico
+            content_col = ft.Column(
+                controls=[
+                    header_row,
+                    ft.Text(f"{item.expression}", size=14, color=ft.Colors.WHITE_70),
+                    ft.Row(
+                        controls=[
+                            ft.Text(f"= {item.result}", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.ORANGE_200, expand=True),
+                            copy_button,
+                            delete_button
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                    )
+                ],
+                spacing=2
+            )
+            # render do container do cartao (controlos)
+            card = ft.Container(
+                content=content_col,
+                bgcolor=ft.Colors.WHITE_10,
+                border_radius=8,
+                padding=10,
+            )
+            
+            self.history_list_view.controls.append(card)
     
     # método para alternar entre mostrar a nossa janela de histórico e a calculadora atual
     def toggle_history_view(self, e):
-        pass
-
+        is_showing_history = self.history_container.visible
+        
+        if is_showing_history: # ocultar o historico
+            self.history_container.visible = False
+            self.buttons_layout.visible = True
+            self.history_button.icon = ft.Icons.HISTORY
+        else: # mostrar o historico
+            self.history_container.visible = True
+            self.buttons_layout.visible = False
+            self.render_history()
+        
+        self.update()
+                    
 def main(page: ft.Page):
     page.title = "Calc App"
     page.bgcolor = ft.Colors.BLACK
