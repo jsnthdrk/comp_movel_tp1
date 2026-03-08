@@ -3,6 +3,8 @@ import flet as ft
 import sympy as sp
 import random
 from datetime import datetime as dt
+import duckdb
+import os
 
 class HistoryItem:
     def __init__(self, index, expression, result):
@@ -10,6 +12,19 @@ class HistoryItem:
         self.expression = expression
         self.result = result
         self.timestamp = dt.now().strftime("%H:%M:%S")
+    
+    # client storage
+    def to_dict(self):
+        return {
+            "index": self.index,
+            "expression": self.expression,
+            "result": self.result,
+            "timestamp": self.timestamp
+        }
+    
+    # duckdb storage
+    def to_tuple(self):
+        return (self.index, self.expression, self.result, self.timestamp)
     
     # debug: assim podemos mostrar na consola o nosso objeto
     def __str__(self):
@@ -45,6 +60,9 @@ class CalculatorApp(ft.Container):
         self.history_data = [] # HistoryItem.object
         self.history_counter = 0 # HistoryItem.index
         self.last_expression = "" # HistoryItem.expression
+        
+        # nome ficheiro parquet
+        self.db_file = "history.parquet"
         
         self.result = ft.Text(value="0", color=ft.Colors.WHITE, size=20, weight=ft.FontWeight.BOLD)   
         self.input = ft.TextField(
@@ -429,6 +447,29 @@ class CalculatorApp(ft.Container):
         
         self.update()
                     
+# lifecylce
+    def did_mount(self):
+        pass
+    
+    # método para carregar histórico nas duas soluções de armazenamento
+    def load_history(self):
+        # ler da nossa db
+        # fallback para client storage e sincronizar as soluções
+        # contador atualizado para o maior ID
+        pass
+        
+
+    # sincronização
+    def save_history(self):
+        # salvar no client side
+        # salvar na db
+        # se nao existir, vamos criar um vazio e/ou eliminar 
+        # converter para tuple, assim o duck db consegue processar
+        # criar tabela
+        # inserir os nossos dados via tuple
+        # exportar da staging table para o parquet
+        pass
+
 def main(page: ft.Page):
     page.title = "Calc App"
     page.bgcolor = ft.Colors.BLACK
