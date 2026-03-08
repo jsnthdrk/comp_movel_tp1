@@ -161,7 +161,11 @@ class CalculatorApp(ft.Container):
         )
                 
         # layout do historico
-        self.history_list_view = ft.ListView(expand=True, spacing=10, padding=10, auto_scroll=True)
+        self.history_list_view = ft.ListView(
+            expand=True, 
+            spacing=10, 
+            padding=10, 
+        )
         
         # container para o historico
         self.history_container = ft.Container(
@@ -170,7 +174,8 @@ class CalculatorApp(ft.Container):
             bgcolor=ft.Colors.GREY_900,
             border_radius=10,
             padding=5,
-            expand=True
+            expand=True,
+            height=220
         )
         
         # layout principal da app
@@ -314,13 +319,15 @@ class CalculatorApp(ft.Container):
             self.page.window.height = self.height # largura da janela fica proporcional ao contai
             self.width = 350 # largura do container diminui para acomodar os botões básicos
             self.page.window.width = self.width # altura da janela fica proporcional ao container
+            self.history_container.height = 220 # votlar à altura inicial
         else:
             self.mode_button.icon = ft.Icons.CALCULATE
             self.mode_button.tooltip = "Modo Científico"
             self.height = 570 # altura do container aumenta para acomodar os novos botões
             self.page.window.height = self.height # largura da janela fica proporcional ao container
             self.width = 650 # largura do container aumenta para acomodar os novos botões
-            self.page.window.width = self.width # altura da janela fica proporcional ao container 
+            self.page.window.width = self.width # altura da janela fica proporcional ao container
+            self.history_container.height = 340 # altura nova para acomodar a janela
 
         self.update()
         self.page.update()
