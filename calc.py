@@ -1,4 +1,5 @@
 from dataclasses import field
+import json
 import flet as ft
 import sympy as sp
 import random
@@ -63,6 +64,17 @@ class CalculatorApp(ft.Container):
         
         # nome ficheiro parquet
         self.db_file = "history.parquet"
+        
+        # duckdb init -> tabela staging
+        self.conn = duckdb.connect(":memory:")
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS history_staging (
+                index INTEGER,
+                expression VARCHAR,
+                result VARCHAR,
+                timestamp VARCHAR
+            )                  
+        """)
         
         self.result = ft.Text(value="0", color=ft.Colors.WHITE, size=20, weight=ft.FontWeight.BOLD)   
         self.input = ft.TextField(
@@ -363,12 +375,17 @@ class CalculatorApp(ft.Container):
         
         print(f"----\nItem Adicionado: {item}") # debug
         self.render_history()
+        
+        if self.page:
+            self.page.run_task(self.save_history) # persistencia
                 
     # método para apagar um item do historico (expressão e resultado) do historico
     def delete_from_history(self, item_object):
         if item_object in self.history_data:
             self.history_data.remove(item_object)
             self.render_history()
+            if self.page: 
+                self.page.run_task(self.save_history) # persistencia
             self.update()
             print(f"----\nItem Apagado: {item_object}") # debug
     
@@ -447,30 +464,121 @@ class CalculatorApp(ft.Container):
         
         self.update()
                     
-# lifecylce
-    def did_mount(self):
-        pass
-    
     # método para carregar histórico nas duas soluções de armazenamento
-    def load_history(self):
-        # ler da nossa db
-        # fallback para client storage e sincronizar as soluções
-        # contador atualizado para o maior ID
-        pass
+    async def load_history(self):
+        self.history_data.clear()
+        self.history_counter = 0
+        loaded_from_parquet = False
+
+        # tentar por parquet se o mesmo tiver operacional
+        if os.path.exists(self.db_file):
+            try:
+                result = duckdb.sql(f"""
+                    SELECT * FROM read_parquet('{self.db_file}')
+                    ORDER BY index DESC
+                """).fetchall()
+
+                for row in result:
+                    item = HistoryItem(int(row[0]), str(row[1]), str(row[2]))
+                    item.timestamp = str(row[3])
+                    self.history_data.append(item)
+                    if item.index > self.history_counter:
+                        self.history_counter = item.index
+
+                loaded_from_parquet = True
+                print(f"Histórico carregado do Parquet: {len(self.history_data)} itens")
+            except Exception as e:
+                print(f"Erro ao ler Parquet: {e}")
+
+        # tentar por shared preferences se o parquet nao funcionar
+        if not loaded_from_parquet:
+            try:
+                prefs = ft.SharedPreferences()
+                data_json = await prefs.get("calc_history")
+                if data_json:
+                    data = json.loads(data_json) # serialização por json
+                    if isinstance(data, list):
+                        for d in data:
+                            item = HistoryItem(
+                                d.get("index", 0),
+                                d.get("expression", ""),
+                                d.get("result", "")
+                            )
+                            item.timestamp = d.get("timestamp", dt.now().strftime("%H:%M:%S"))
+                            self.history_data.append(item)
+                            if item.index > self.history_counter:
+                                self.history_counter = item.index
+                        print(f"Histórico carregado do SharedPreferences: {len(self.history_data)} itens")
+                        # sincronizar calculos guardados na client storage para a nossa base de dados
+                        await self.save_history()
+            except Exception as e:
+                print(f"Erro ao ler SharedPreferences: {e}")
+
+        if not self.history_data:
+            print("Nenhum histórico anterior encontrado.")
+
+        await self.debug_storage()
+        self.render_history()
+        self.update()
         
+    # método de sincronização nas duas soluções de armazenamento
+    async def save_history(self):
+        try:
+            # Save to SharedPreferences as JSON string
+            prefs = ft.SharedPreferences()
+            data_dicts = [item.to_dict() for item in self.history_data]
+            data_json = json.dumps(data_dicts)
+            await prefs.set("calc_history", data_json)
 
-    # sincronização
-    def save_history(self):
-        # salvar no client side
-        # salvar na db
-        # se nao existir, vamos criar um vazio e/ou eliminar 
-        # converter para tuple, assim o duck db consegue processar
-        # criar tabela
-        # inserir os nossos dados via tuple
-        # exportar da staging table para o parquet
-        pass
+            # Save to DuckDB Parquet
+            if self.history_data:
+                tuples = [item.to_tuple() for item in self.history_data]
+                self.conn.execute("DELETE FROM history_staging")
+                self.conn.executemany("INSERT INTO history_staging VALUES (?, ?, ?, ?)", tuples)
+                self.conn.execute(f"""
+                    COPY history_staging TO '{self.db_file}' 
+                    (FORMAT 'parquet', OVERWRITE true)
+                """)
+            else:  # se o meu historico tiver vazio, vamos remover o ficheiro
+                if os.path.exists(self.db_file):
+                    os.remove(self.db_file)
 
-def main(page: ft.Page):
+            print(f"Histórico sincronizado com sucesso no SharedPreferences e Parquet: {len(self.history_data)} itens")
+        except Exception as e:
+            print(f"Erro ao salvar histórico: {e}")     
+                 
+    async def debug_storage(self):
+        print("\n=== STORAGE DEBUG ===")
+
+        # debug parquet
+        try:
+            if os.path.exists(self.db_file):
+                result = duckdb.sql(f"SELECT * FROM read_parquet('{self.db_file}')").fetchall()
+                print(f"Parquet contents ({len(result)} rows):")
+                for row in result:
+                    print(row)
+            else:
+                print("Parquet file does not exist.")
+        except Exception as e:
+            print(f"Error reading Parquet: {e}")
+
+        # debug sharedpreferences
+        try:
+            prefs = ft.SharedPreferences()
+            data_json = await prefs.get("calc_history")
+            if data_json:
+                data = json.loads(data_json)
+                print(f"SharedPreferences contents ({len(data)} items):")
+                for item in data:
+                    print(item)
+            else:
+                print("SharedPreferences: no data found.")
+        except Exception as e:
+            print(f"Error reading SharedPreferences: {e}")
+
+        print("=== END DEBUG ===\n")
+
+async def main(page: ft.Page):
     page.title = "Calc App"
     page.bgcolor = ft.Colors.BLACK
     page.window.resizable = False
@@ -480,5 +588,6 @@ def main(page: ft.Page):
     calc = CalculatorApp()
     # add application's root control to the page
     page.add(calc)
+    await calc.load_history() # load no startup
 
 ft.run(main)
